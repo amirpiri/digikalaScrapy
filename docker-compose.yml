@@ -1,0 +1,48 @@
+version: '2'
+
+services:
+  python:
+    build:
+      context: ./
+      dockerfile: Dockerfile
+    volumes:
+      - ./:/usr/local/sbin/scraper
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.5
+    restart: always
+    ports:
+      - 8484:5000
+  mysql:
+    image: "mysql/mysql-server:5.7"
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_ROOT_HOST=%
+    volumes:
+      - /opt/mysql_scraper:/var/lib/mysql
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.7
+    restart: always
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    environment:
+      - PMA_ARBITRARY=1
+      - MYSQL_USERNAME=${DB_USERNAME}
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+    networks:
+      vpcbr:
+        ipv4_address: 10.5.0.8
+    restart: always
+    ports:
+      - 85:80
+
+networks:
+  vpcbr:
+    driver: bridge
+    ipam:
+     config:
+       - subnet: 10.5.0.0/16
+         gateway: 10.5.0.1
+
